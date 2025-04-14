@@ -4,19 +4,9 @@
     <title>Treasure Trails - Game</title>
     <style>
         .board {
-            display: flex;
-            flex-direction: column-reverse;
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
             gap: 2px;
-        }
-        .row {
-            display: flex;
-            gap: 2px;
-        }
-        .row.even {
-            flex-direction: row;
-        }
-        .row.odd {
-            flex-direction: row-reverse;
         }
         .tile {
             width: 30px;
@@ -59,17 +49,14 @@
 
     <h3>Board</h3>
     <div class="board">
-        {% for row in board|reverse %}
-            {% set row_index = board|length - 1 - loop.index0 %}
-            <div class="row {% if row_index % 2 == 0 %}even{% else %}odd{% endif %}">
-                {% for tile in row %}
-                    <div class="tile {% if tile.treasure %}treasure{% endif %}">
-                        {% if tile.player is not none %}
-                            <span class="player" style="background-color: {{ players[tile.player].color }}">{{ tile.player + 1 }}</span>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
+        {% for row in board %}
+            {% for tile in row %}
+                <div class="tile {% if tile.treasure %}treasure{% endif %}">
+                    {% if tile.player is not none %}
+                        <span class="player" style="background-color: {{ players[tile.player].color }}">{{ tile.player + 1 }}</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
         {% endfor %}
     </div>
 

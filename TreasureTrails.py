@@ -71,18 +71,15 @@ def roll():
 
     # Convert position to linear index for 1D movement
     x, y = player['pos']
-    index = y * BOARD_SIZE + (x if y % 2 == 0 else BOARD_SIZE - 1 - x)
+    index = y * BOARD_SIZE + x
     index += roll
     max_index = BOARD_SIZE * BOARD_SIZE - 1
     if index > max_index:
         index = max_index
 
-    # Convert linear index back to zig-zag position
+    # Convert linear index back to position
     new_y = index // BOARD_SIZE
-    if new_y % 2 == 0:
-        new_x = index % BOARD_SIZE
-    else:
-        new_x = BOARD_SIZE - 1 - (index % BOARD_SIZE)
+    new_x = index % BOARD_SIZE
 
     # Update board
     old_x, old_y = player['pos']
@@ -97,10 +94,7 @@ def roll():
     player['pos'] = [new_x, new_y]
 
     # Check if all players have reached the end
-    all_done = all(
-        p['pos'] == ([BOARD_SIZE - 1, BOARD_SIZE - 1] if BOARD_SIZE % 2 == 1 else [0, BOARD_SIZE - 1])
-        for p in players
-    )
+    all_done = all(p['pos'] == [BOARD_SIZE - 1, BOARD_SIZE - 1] for p in players)
     session['game_over'] = all_done
 
     # Move to next player
