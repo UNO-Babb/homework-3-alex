@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Treasure Trails - Game</title>
+    <style>
+        .board {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 2px;
+        }
+        .row {
+            display: flex;
+            gap: 2px;
+        }
+        .row.even {
+            flex-direction: row;
+        }
+        .row.odd {
+            flex-direction: row-reverse;
+        }
+        .tile {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+        .treasure {
+            background-color: gold;
+        }
+        .player {
+            font-weight: bold;
+            color: white;
+            padding: 4px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Treasure Trails</h1>
+
+    {% if not game_over %}
+        <p>🎲 <strong>Last Roll:</strong> {{ last_roll if last_roll else '—' }}</p>
+        <p>🧍‍♂️ <strong>Current Turn:</strong> Player {{ current_turn + 1 }}</p>
+        <a href="{{ url_for('roll') }}">Roll Die</a>
+    {% else %}
+        <h2>🏁 Game Over!</h2>
+        {% set max_treasure = players | max(attribute='treasure') %}
+        {% set winners = players | selectattr('treasure', 'equalto', max_treasure) | list %}
+        <p>🏆 Winner: 
+            {% for winner in winners %}
+                Player {{ winner.id + 1 }} with {{ winner.treasure }} treasure{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        <a href="{{ url_for('reset') }}">Play Again</a>
+    {% endif %}
+
+    <h3>Board</h3>
+    <div class="board">
+        {% for row in board|reverse %}
+            {% set row_index = board|length - 1 - loop.index0 %}
+            <div class="row {% if row_index % 2 == 0 %}even{% else %}odd{% endif %}">
+                {% for tile in row %}
+                    <div class="tile {% if tile.treasure %}treasure{% endif %}">
+                        {% if tile.player is not none %}
+                            <span class="player" style="background-color: {{ players[tile.player].color }}">{{ tile.player + 1 }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <h3>Player Stats</h3>
+    <ul>
+        {% for player in players %}
+            <li style="color: {{ player.color }}">
+                Player {{ player.id + 1 }} — Treasure: {{ player.treasure }} —
+                Position: ({{ player.pos[0] }}, {{ player.pos[1] }})
+            </li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <a href="{{ url_for('reset') }}">Restart</a>
+</body>
+</html>
