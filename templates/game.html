@@ -5,26 +5,42 @@
     <style>
         .board {
             display: grid;
-            grid-template-columns: repeat(10, 30px);
+            grid-template-columns: repeat(10, 40px);
             gap: 2px;
         }
         .tile {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             border: 1px solid #ccc;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 12px;
+            font-size: 14px;
+            position: relative;
         }
         .treasure {
             background-color: gold;
+        }
+        .trap {
+            background-color: #f88;
+        }
+        .start {
+            background-color: lightgreen;
+        }
+        .end {
+            background-color: lightblue;
         }
         .player {
             font-weight: bold;
             color: white;
             padding: 4px;
             border-radius: 50%;
+        }
+        .tile-content {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 10px;
         }
     </style>
 </head>
@@ -50,11 +66,25 @@
     <h3>Board</h3>
     <div class="board">
         {% for row in board %}
+            {% set row_index = loop.index0 %}
             {% for tile in row %}
-                <div class="tile {% if tile.treasure %}treasure{% endif %}">
+                {% set col_index = loop.index0 %}
+                {% set is_start = row_index == 0 and col_index == 0 %}
+                {% set is_end = row_index == 9 and col_index == 9 %}
+                <div class="tile
+                    {% if is_start %} start
+                    {% elif is_end %} end
+                    {% elif tile.trap %} trap
+                    {% elif tile.treasure > 0 %} treasure
+                    {% endif %}">
+
+                    {% if is_start %}🚩{% elif is_end %}🏁{% endif %}
                     {% if tile.player is not none %}
                         <span class="player" style="background-color: {{ players[tile.player].color }}">{{ tile.player + 1 }}</span>
                     {% endif %}
+                    <div class="tile-content">
+                        {% if tile.trap %}💀{% elif tile.treasure > 0 %}💰{{ tile.treasure }}{% endif %}
+                    </div>
                 </div>
             {% endfor %}
         {% endfor %}

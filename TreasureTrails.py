@@ -7,12 +7,13 @@ app.secret_key = 'your_secret_key_here'
 # Game config
 BOARD_SIZE = 10
 TREASURE_COUNT = 30
+TRAP_COUNT = 10
 
 # Initialize game state
 def init_game(player_count):
-    board = [[{'player': None, 'treasure': False} for _ in range(BOARD_SIZE)] for _ in range(BOARD_SIZE)]
+    board = [[{'player': None, 'treasure': 0, 'trap': False} for _ in range(BOARD_SIZE)] for _ in range(BOARD_SIZE)]
     players = []
-    
+
     # Place players at the start (0, 0)
     for i in range(player_count):
         players.append({
@@ -23,14 +24,23 @@ def init_game(player_count):
         })
         board[0][0]['player'] = i
 
-    # Place treasures randomly
+    # Place treasure randomly with value 1-5
     placed = 0
     while placed < TREASURE_COUNT:
         x = random.randint(0, BOARD_SIZE - 1)
         y = random.randint(0, BOARD_SIZE - 1)
-        if not board[y][x]['treasure'] and (x, y) != (0, 0):
-            board[y][x]['treasure'] = True
+        if board[y][x]['treasure'] == 0 and (x, y) != (0, 0) and (x, y) != (BOARD_SIZE - 1, BOARD_SIZE - 1):
+            board[y][x]['treasure'] = random.randint(1, 5)
             placed += 1
+
+    # Place traps randomly
+    placed_traps = 0
+    while placed_traps < TRAP_COUNT:
+        x = random.randint(0, BOARD_SIZE - 1)
+        y = random.randint(0, BOARD_SIZE - 1)
+        if not board[y][x]['trap'] and board[y][x]['treasure'] == 0 and (x, y) != (0, 0) and (x, y) != (BOARD_SIZE - 1, BOARD_SIZE - 1):
+            board[y][x]['trap'] = True
+            placed_traps += 1
 
     return board, players
 
@@ -86,9 +96,15 @@ def roll():
     if board[old_y][old_x]['player'] == player['id']:
         board[old_y][old_x]['player'] = None
 
-    if board[new_y][new_x]['treasure']:
-        player['treasure'] += 1
-        board[new_y][new_x]['treasure'] = False
+    # Check for treasure
+    treasure_value = board[new_y][new_x]['treasure']
+    if treasure_value > 0:
+        player['treasure'] += treasure_value
+        board[new_y][new_x]['treasure'] = 0
+
+    # Check for trap
+    if board[new_y][new_x]['trap'] and player['treasure'] > 0:
+        player['treasure'] -= 1  # Lose 1 treasure point
 
     board[new_y][new_x]['player'] = player['id']
     player['pos'] = [new_x, new_y]
@@ -110,4 +126,4 @@ def reset():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=5001)
